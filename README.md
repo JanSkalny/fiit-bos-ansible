@@ -21,3 +21,11 @@
 7. test ansible connectivity using `ansible -m ping all`
 8. challange: deploy sudoers, authorized_keys and other ansible depedencies using sshpass and "initial" playbook using `raw` modules
 
+
+## known bugs / troubleshooting
+- bad file descriptor in .ansible/cp/...
+  - either disable ControlMaster for ssh or move control path to tmp using following ansible.cfg
+  ```
+  [ssh_connection]
+  control_path = /tmp/ansible-ssh-%%h-%%p-%%r
+  ```
