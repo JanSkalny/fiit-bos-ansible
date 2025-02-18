@@ -1,0 +1,82 @@
+networks:
+  ansible_ext:
+    driver: bridge
+  ansible_int:
+    driver: bridge
+
+services:
+  ansible:
+    image: ubuntu:24.04
+    container_name: ansible
+    networks:
+      - ansible_ext
+    command: >
+      /bin/bash -c "
+      export DEBIAN_FRONTEND=noninteractive &&
+      apt-get update &&
+      apt-get install -y vim-nox &&
+      apt-get install -y openssh-client iputils-ping iproute2 netcat-openbsd &&
+      echo 'export PS1=\"ansible# \"' >> /root/.bashrc &&
+      tail -f /dev/null
+      "
+      # apt-get install -y ansible &&
+
+  jump:
+    image: ubuntu:24.04
+    container_name: jump
+    networks:
+      - ansible_int
+      - ansible_ext
+    command: >
+      /bin/bash -c "
+      export DEBIAN_FRONTEND=noninteractive &&
+      apt-get update &&
+      apt-get install -y openssh-server sudo &&
+      apt-get install -y openssh-client iputils-ping iproute2 netcat-openbsd &&
+      id -u user &>/dev/null || useradd -m -s /bin/bash user &&
+      echo 'user:krokodil' | chpasswd &&
+      usermod -aG sudo user &&
+      echo 'export PS1=\"root@jump# \"' >> /root/.profile &&
+      echo 'export PS1=\"user@jump# \"' >> /home/user/.profile &&
+      service ssh start &&
+      tail -f /dev/null
+      "
+
+  web:
+    image: ubuntu:24.04
+    container_name: web
+    networks:
+      - ansible_int
+    command: >
+      /bin/bash -c "
+      export DEBIAN_FRONTEND=noninteractive &&
+      apt-get update &&
+      apt-get install -y openssh-server sudo &&
+      id -u user &>/dev/null || useradd -m -s /bin/bash user &&
+      echo 'user:krokodil' | chpasswd &&
+      usermod -aG sudo user &&
+      echo 'export PS1=\"root@web# \"' >> /root/.profile &&
+      echo 'export PS1=\"user@web# \"' >> /home/user/.profile &&
+      service ssh start &&
+      tail -f /dev/null
+      "
+
+  files:
+    image: ubuntu:24.04
+    container_name: files
+    networks:
+      - ansible_int
+    command: >
+      /bin/bash -c "
+      export DEBIAN_FRONTEND=noninteractive &&
+      apt-get update &&
+      apt-get install -y openssh-server sudo &&
+      id -u user &>/dev/null || useradd -m -s /bin/bash user &&
+      echo 'user:krokodil' | chpasswd &&
+      usermod -aG sudo user &&
+      echo 'export PS1=\"root@files# \"' >> /root/.profile &&
+      echo 'export PS1=\"user@files# \"' >> /home/user/.profile &&
+      service ssh start &&
+      tail -f /dev/null
+      "
+
