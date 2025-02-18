@@ -10,6 +10,8 @@ services:
     container_name: ansible
     networks:
       - ansible_ext
+    volumes:
+      - ./ansible:/root/
     command: >
       /bin/bash -c "
       export DEBIAN_FRONTEND=noninteractive &&
@@ -17,9 +19,10 @@ services:
       apt-get install -y vim-nox &&
       apt-get install -y openssh-client iputils-ping iproute2 netcat-openbsd &&
       echo 'export PS1=\"ansible# \"' >> /root/.bashrc &&
+      echo "READY" &&
       tail -f /dev/null
       "
-      # apt-get install -y ansible &&
+      #XXX: apt-get install -y ansible &&
 
   jump:
     image: ubuntu:24.04
